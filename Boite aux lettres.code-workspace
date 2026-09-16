@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../OpenAstroTech"
+		},
+		{
+			"path": "../ESP32-C3 kicad"
+		}
+	],
+	"settings": {}
+}

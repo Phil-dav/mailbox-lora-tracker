@@ -39,9 +39,9 @@
         "other_text_thickness": 0.15,
         "other_text_upright": false,
         "pads": {
-          "drill": 0.8,
-          "height": 1.27,
-          "width": 2.54
+          "drill": 3.3,
+          "height": 3.3,
+          "width": 3.3
         },
         "silk_line_width": 0.1,
         "silk_text_italic": false,
@@ -211,9 +211,7 @@
       ],
       "track_widths": [
         0.0,
-        1.0,
-        2.0,
-        5.0
+        1.0
       ],
       "tuning_pattern_settings": {
         "diff_pair_defaults": {
@@ -504,7 +502,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "Latch colis.kicad_pro",
+    "filename": "Latch colis sans inter.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -606,6 +604,18 @@
         },
         {
           "group_by": true,
+          "label": "Exclude from Simulation",
+          "name": "${EXCLUDE_FROM_SIM}",
+          "show": true
+        },
+        {
+          "group_by": true,
+          "label": "Exclude from Position Files",
+          "name": "${EXCLUDE_FROM_POS_FILES}",
+          "show": true
+        },
+        {
+          "group_by": true,
           "label": "Footprint",
           "name": "Footprint",
           "show": true
@@ -615,18 +625,6 @@
           "label": "Datasheet",
           "name": "Datasheet",
           "show": true
-        },
-        {
-          "group_by": false,
-          "label": "Check_prices",
-          "name": "Check_prices",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "Description_1",
-          "name": "Description_1",
-          "show": false
         },
         {
           "group_by": false,
@@ -684,26 +682,14 @@
         },
         {
           "group_by": false,
-          "label": "Sim.Device",
-          "name": "Sim.Device",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "Sim.Pins",
-          "name": "Sim.Pins",
-          "show": false
-        },
-        {
-          "group_by": false,
           "label": "SnapEDA_Link",
           "name": "SnapEDA_Link",
           "show": false
         },
         {
           "group_by": false,
-          "label": "Availability",
-          "name": "Availability",
+          "label": "Description_1",
+          "name": "Description_1",
           "show": false
         },
         {
@@ -714,8 +700,20 @@
         },
         {
           "group_by": false,
+          "label": "Check_prices",
+          "name": "Check_prices",
+          "show": false
+        },
+        {
+          "group_by": false,
           "label": "#",
           "name": "${ITEM_NUMBER}",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Availability",
+          "name": "Availability",
           "show": false
         }
       ],
@@ -762,18 +760,18 @@
     "subpart_id_separator": 0,
     "top_level_sheets": [
       {
-        "filename": "Latch colis.kicad_sch",
-        "name": "Racine",
-        "uuid": "2c0bf1d6-3489-4acc-8612-780f43ac3b28"
+        "filename": "Latch colis sans inter.kicad_sch",
+        "name": "Latch colis sans inter",
+        "uuid": "839163b6-a759-453f-9dd7-1427fd95482e"
       }
     ],
-    "used_designators": "",
+    "used_designators": "#FLG1-4,J1-4,R1-2,#PWR5-9,D1-2,K1-2,Q1-2,U1-3",
     "variants": []
   },
   "sheets": [
     [
-      "2c0bf1d6-3489-4acc-8612-780f43ac3b28",
-      "Racine"
+      "839163b6-a759-453f-9dd7-1427fd95482e",
+      "Latch colis sans inter"
     ]
   ],
   "text_variables": {

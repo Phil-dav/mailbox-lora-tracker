@@ -1,8 +1,8 @@
 {
   "board": {
-    "active_layer": 0,
+    "active_layer": 25,
     "active_layer_preset": "",
-    "auto_track_width": false,
+    "auto_track_width": true,
     "hidden_netclasses": [],
     "hidden_nets": [],
     "high_contrast_mode": 0,
@@ -63,7 +63,7 @@
     "ssh_key": ""
   },
   "meta": {
-    "filename": "Latch colis.kicad_prl",
+    "filename": "Latch colis sans inter.kicad_prl",
     "version": 5
   },
   "net_inspector_panel": {
@@ -92,16 +92,16 @@
       9
     ],
     "col_widths": [
-      162,
-      147,
+      186,
+      171,
       123,
       122,
       123,
       161,
       119,
       126,
-      91,
-      91
+      112,
+      112
     ],
     "custom_group_rules": [],
     "expanded_rows": [],

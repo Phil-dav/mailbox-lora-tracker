@@ -1,0 +1,4 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "Mes empreintes") (type "KiCad") (uri "${KIPRJMOD}/../../../../Mes empreintes.pretty") (options "") (descr "Empreintes personnelles, partagees entre projets (Programme VS code)"))
+)

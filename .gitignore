@@ -2,3 +2,4 @@
 **/*.lck
 **/.history/
 **/*-backups/
+.mcp.json

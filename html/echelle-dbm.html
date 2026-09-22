@@ -1,0 +1,405 @@
+<title>Échelle dBm LoRa</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #0a0f0d;
+    --surface: #101917;
+    --surface-2: #14201d;
+    --line: #223330;
+    --text: #d9ece3;
+    --text-dim: #8fada2;
+    --text-faint: #5c7a70;
+    --accent: #4fd8a0;
+    --accent-dim: #2c6650;
+    --warn: #e8b95a;
+    --warn-dim: #4a3c1d;
+    --crit: #f2726b;
+    --crit-dim: #4a2624;
+    --font-display: 'IBM Plex Mono', ui-monospace, 'Cascadia Code', monospace;
+    --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+  }
+
+  body {
+    display: flex;
+    justify-content: center;
+    padding: clamp(2rem, 6vw, 4.5rem) 1.5rem 4rem;
+  }
+
+  main {
+    width: 100%;
+    max-width: 44rem;
+  }
+
+  .eyebrow {
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.8rem;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.7rem, 4.4vw, 2.2rem);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin: 0 0 1rem;
+    text-wrap: balance;
+    color: var(--text);
+  }
+
+  .lede {
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--text-dim);
+    max-width: 40rem;
+    margin: 0 0 2.6rem;
+  }
+
+  .lede strong { color: var(--text); font-weight: 600; }
+
+  /* ---- chart ---- */
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.8rem 1.6rem 1.4rem;
+    margin-bottom: 2.2rem;
+  }
+
+  .chart-title {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 1.4rem;
+  }
+
+  svg { display: block; overflow: visible; }
+  svg text { font-family: var(--font-display); }
+
+  .tick-label { fill: var(--text-faint); font-size: 10.5px; }
+  .zone-label { fill: var(--text-dim); font-size: 10.5px; font-weight: 500; }
+  .axis-line { stroke: var(--line); stroke-width: 1; }
+  .tick-line { stroke: var(--line); stroke-width: 1; }
+
+  .marker-line { stroke-width: 1.5; stroke-dasharray: 3 3; }
+  .marker-dot { stroke: var(--bg); stroke-width: 2; }
+  .marker-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .marker-sub {
+    font-family: var(--font-body);
+    font-size: 10px;
+    fill: var(--text-faint);
+  }
+
+  .threshold-label {
+    fill: var(--crit);
+    font-size: 10.5px;
+    font-weight: 600;
+  }
+
+  /* ---- legend ---- */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.4rem;
+    margin-top: 1.6rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  .swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex: none;
+  }
+
+  /* ---- log explainer ---- */
+  h2 {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 1.1rem;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 2.2rem;
+  }
+
+  .step {
+    background: var(--surface);
+    padding: 1.2rem 1.1rem;
+  }
+
+  .step .delta {
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  .step .factor {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+
+  .step .note {
+    font-size: 0.78rem;
+    color: var(--text-faint);
+    line-height: 1.4;
+  }
+
+  /* ---- readout table ---- */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 34rem;
+    font-size: 0.88rem;
+  }
+
+  thead th {
+    text-align: left;
+    font-family: var(--font-display);
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    font-weight: 500;
+    padding: 0.8rem 1rem;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+
+  tbody tr { background: var(--surface); }
+  tbody tr + tr td { border-top: 1px solid var(--line); }
+
+  td {
+    padding: 0.85rem 1rem;
+    vertical-align: middle;
+    line-height: 1.5;
+  }
+
+  td.num {
+    font-family: var(--font-display);
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .pill {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.72rem;
+    padding: 0.18rem 0.55rem;
+    border-radius: 4px;
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .pill.strong { background: var(--accent-dim); color: var(--accent); }
+  .pill.usable { background: var(--warn-dim); color: var(--warn); }
+  .pill.limit { background: var(--crit-dim); color: var(--crit); }
+
+  footer {
+    margin-top: 2.4rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.82rem;
+    color: var(--text-faint);
+    line-height: 1.6;
+  }
+
+  footer strong { color: var(--text-dim); }
+
+  @media (max-width: 560px) {
+    .steps { grid-template-columns: 1fr; }
+  }
+</style>
+
+<main>
+  <p class="eyebrow">SX1276/78 · SF7 · BW 125 kHz</p>
+  <h1>Lire une valeur RSSI en dBm</h1>
+  <p class="lede">
+    Le RSSI (force du signal reçu) de tes cartes LoRa est presque toujours
+    <strong>négatif</strong>, sur une échelle <strong>logarithmique</strong> —
+    plus la valeur est proche de zéro, plus le signal est fort. Le repère
+    ci-dessous replace tes propres mesures sur cette échelle, avec le seuil
+    de sensibilité réel de la puce.
+  </p>
+
+  <div class="chart-card">
+    <p class="chart-title">Échelle RSSI — de -140 à 0 dBm</p>
+    <svg viewBox="0 0 720 190" width="100%" role="img" aria-label="Échelle RSSI en dBm avec zones de qualité de signal et mesures réelles annotées">
+      <!-- zones -->
+      <!-- scale: -140 -> 0 mapped to x=20 -> x=700, so px per dB = 680/140 = 4.857 -->
+      <!-- x(v) = 20 + (v + 140) * 4.857 -->
+
+      <!-- critical zone: -140 to -122 -->
+      <rect x="20" y="46" width="87.4" height="26" fill="#f2726b" opacity="0.16"></rect>
+      <!-- usable/weak zone: -122 to -90 -->
+      <rect x="107.4" y="46" width="155.4" height="26" fill="#e8b95a" opacity="0.16"></rect>
+      <!-- strong zone: -90 to 0 -->
+      <rect x="262.8" y="46" width="437.2" height="26" fill="#4fd8a0" opacity="0.14"></rect>
+
+      <!-- axis line -->
+      <line x1="20" y1="72" x2="700" y2="72" class="axis-line"></line>
+
+      <!-- ticks every 20 dB -->
+      <g class="tick-line">
+        <line x1="20" y1="72" x2="20" y2="80"></line>
+        <line x1="117.1" y1="72" x2="117.1" y2="80"></line>
+        <line x1="214.3" y1="72" x2="214.3" y2="80"></line>
+        <line x1="311.4" y1="72" x2="311.4" y2="80"></line>
+        <line x1="408.6" y1="72" x2="408.6" y2="80"></line>
+        <line x1="505.7" y1="72" x2="505.7" y2="80"></line>
+        <line x1="602.9" y1="72" x2="602.9" y2="80"></line>
+        <line x1="700" y1="72" x2="700" y2="80"></line>
+      </g>
+      <g class="tick-label" text-anchor="middle">
+        <text x="20" y="94">-140</text>
+        <text x="117.1" y="94">-120</text>
+        <text x="214.3" y="94">-100</text>
+        <text x="311.4" y="94">-80</text>
+        <text x="408.6" y="94">-60</text>
+        <text x="505.7" y="94">-40</text>
+        <text x="602.9" y="94">-20</text>
+        <text x="700" y="94">0</text>
+      </g>
+
+      <!-- zone labels -->
+      <g class="zone-label" text-anchor="middle">
+        <text x="63.7" y="40">hors de portée</text>
+        <text x="185.1" y="40">signal faible</text>
+        <text x="481.4" y="40">signal fort</text>
+      </g>
+
+      <!-- sensitivity threshold marker at -122 dBm -> x = 20 + 18*4.857 = 107.4 -->
+      <line x1="107.4" y1="30" x2="107.4" y2="98" stroke="#f2726b" stroke-width="1.5"></line>
+      <text x="107.4" y="18" class="threshold-label" text-anchor="middle">seuil ≈ -122 dBm</text>
+
+      <!-- measured point: real mailbox test -90 dBm -> x = 20 + 50*4.857 = 262.9 -->
+      <circle cx="262.9" cy="72" r="5" fill="#e8b95a" class="marker-dot"></circle>
+      <line x1="262.9" y1="108" x2="262.9" y2="78" class="marker-line" stroke="#e8b95a"></line>
+      <text x="262.9" y="124" text-anchor="middle" class="marker-label" fill="#e8b95a">-90 dBm</text>
+      <text x="262.9" y="138" text-anchor="middle" class="marker-sub">test réel, boîte fermée</text>
+
+      <!-- measured point: short range -20 dBm avg -> x = 20 + 120*4.857 = 602.9 -->
+      <circle cx="602.9" cy="72" r="5" fill="#4fd8a0" class="marker-dot"></circle>
+      <line x1="602.9" y1="108" x2="602.9" y2="78" class="marker-line" stroke="#4fd8a0"></line>
+      <text x="602.9" y="124" text-anchor="middle" class="marker-label" fill="#4fd8a0">-8 à -24 dBm</text>
+      <text x="602.9" y="138" text-anchor="middle" class="marker-sub">tests courte distance</text>
+    </svg>
+
+    <div class="legend">
+      <div class="legend-item"><span class="swatch" style="background:#f2726b"></span>Sous le seuil du récepteur — plus de réception</div>
+      <div class="legend-item"><span class="swatch" style="background:#e8b95a"></span>Signal faible mais exploitable</div>
+      <div class="legend-item"><span class="swatch" style="background:#4fd8a0"></span>Signal fort, large marge</div>
+    </div>
+  </div>
+
+  <h2>Pourquoi l'échelle est logarithmique</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="delta">ÉCART DE 3 dB</div>
+      <div class="factor">× 2</div>
+      <div class="note">La puissance double (ou est divisée par deux) à chaque tranche de 3 dB.</div>
+    </div>
+    <div class="step">
+      <div class="delta">ÉCART DE 10 dB</div>
+      <div class="factor">× 10</div>
+      <div class="note">La puissance est multipliée (ou divisée) par dix à chaque tranche de 10 dB.</div>
+    </div>
+    <div class="step">
+      <div class="delta">ÉCART DE 30 dB</div>
+      <div class="factor">× 1000</div>
+      <div class="note">Ex. entre -20 dBm et -50 dBm mesurés sur tes propres tests.</div>
+    </div>
+  </div>
+
+  <h2>Tes mesures replacées sur l'échelle</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Contexte</th>
+          <th>RSSI</th>
+          <th>Marge avant le seuil</th>
+          <th>Qualité</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Tests courte distance (60-70cm)</td>
+          <td class="num">-8 à -24 dBm</td>
+          <td class="num">~100 dB</td>
+          <td><span class="pill strong">Très fort</span></td>
+        </tr>
+        <tr>
+          <td>Test réel, boîte aux lettres fermée</td>
+          <td class="num">-90 dBm</td>
+          <td class="num">~32 dB</td>
+          <td><span class="pill usable">Confortable</span></td>
+        </tr>
+        <tr>
+          <td>Seuil de sensibilité (SF7, BW125)</td>
+          <td class="num">≈ -122 dBm</td>
+          <td class="num">0 dB</td>
+          <td><span class="pill limit">Limite</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    <p><strong>À retenir :</strong> plus la valeur RSSI est proche de zéro, plus
+    le signal est fort — l'inverse de ce qu'on pourrait croire en regardant
+    juste la grandeur du chiffre. Avec ~32 dB de marge sur ton installation
+    réelle, tu es loin du seuil de décrochage.</p>
+  </footer>
+</main>

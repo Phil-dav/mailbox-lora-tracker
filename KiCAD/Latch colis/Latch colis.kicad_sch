@@ -5,7 +5,7 @@
 	(uuid "2c0bf1d6-3489-4acc-8612-780f43ac3b28")
 	(paper "A4")
 	(title_block
-		(title "Gestion courrier boîtes aux lettres")
+		(title "Gestion courriers boîtes aux lettres")
 		(date "2026-09-06")
 	)
 	(lib_symbols
@@ -5005,7 +5005,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Package_TO_SOT_THT:TO-92L_Inline_Wide"
+		(property "Footprint" "Package_TO_SOT_THT:TO-92"
 			(at 190.5 92.71 0)
 			(hide yes)
 			(show_name no)

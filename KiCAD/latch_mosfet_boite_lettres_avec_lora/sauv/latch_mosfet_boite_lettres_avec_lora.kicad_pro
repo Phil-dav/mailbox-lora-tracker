@@ -39,9 +39,9 @@
         "other_text_thickness": 0.15,
         "other_text_upright": false,
         "pads": {
-          "drill": 0.8,
-          "height": 1.27,
-          "width": 2.54
+          "drill": 0.0,
+          "height": 1.5,
+          "width": 1.5
         },
         "silk_line_width": 0.1,
         "silk_text_italic": false,
@@ -195,9 +195,9 @@
       ],
       "track_widths": [
         0.0,
-        1.0,
-        2.0,
-        5.0
+        0.4,
+        0.5,
+        0.7
       ],
       "tuning_pattern_settings": {
         "diff_pair_defaults": {
@@ -240,7 +240,7 @@
       "internal_id": "",
       "mfg": "",
       "mpn": "",
-      "sch_revision": ""
+      "sch_revision": "V0.0"
     },
     "layer_pairs": [],
     "layer_presets": [],
@@ -488,7 +488,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "Latch colis.kicad_pro",
+    "filename": "latch_mosfet_boite_lettres_avec_lora.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -738,6 +738,14 @@
     "meta": {
       "version": 1
     },
+    "ngspice": {
+      "fix_include_paths": true,
+      "meta": {
+        "version": 0
+      },
+      "model_mode": 4,
+      "workbook_filename": ""
+    },
     "page_layout_descr_file": "",
     "plot_directory": "",
     "reuse_designators": true,
@@ -745,9 +753,9 @@
     "subpart_id_separator": 0,
     "top_level_sheets": [
       {
-        "filename": "Latch colis.kicad_sch",
-        "name": "Racine",
-        "uuid": "2c0bf1d6-3489-4acc-8612-780f43ac3b28"
+        "filename": "latch_mosfet_boite_lettres_avec_lora.kicad_sch",
+        "name": "latch_mosfet_boite_lettres_avec_lora",
+        "uuid": "7963dd42-feb4-4155-971c-e7402cdd74d4"
       }
     ],
     "used_designators": "",
@@ -755,8 +763,8 @@
   },
   "sheets": [
     [
-      "2c0bf1d6-3489-4acc-8612-780f43ac3b28",
-      "Racine"
+      "7963dd42-feb4-4155-971c-e7402cdd74d4",
+      "latch_mosfet_boite_lettres_avec_lora"
     ]
   ],
   "text_variables": {},

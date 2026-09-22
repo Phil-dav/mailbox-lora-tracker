@@ -1,7 +1,7 @@
 [package]
 name = "lora-boite-lettres"
 version = "0.1.0"
-authors = ["Phil-dav"]
+authors = ["Phil-dav <flophil34@yahoo.com>"]
 edition = "2021"
 resolver = "2"
 rust-version = "1.82"

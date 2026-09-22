@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Calcul du circuit de verrouillage d'alimentation</title>
+<style>
+  body { font-family: Georgia, serif; max-width: 900px; margin: 40px auto; padding: 0 20px;
+         background: #1b1b1b; color: #e8e8e8; line-height: 1.6; }
+  h1 { color: #7fd1ff; border-bottom: 2px solid #444; padding-bottom: 10px; }
+  h2 { color: #7fd1ff; margin-top: 40px; border-bottom: 1px solid #333; padding-bottom: 6px; }
+  h3 { color: #b8e8b8; margin-top: 25px; }
+  code, .formule { font-family: Consolas, monospace; background: #2a2a2a; padding: 2px 6px;
+                    border-radius: 4px; color: #ffd479; }
+  .formule-bloc { background: #2a2a2a; padding: 12px 16px; border-left: 3px solid #7fd1ff;
+                   margin: 12px 0; font-family: Consolas, monospace; color: #ffd479; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+  th, td { border: 1px solid #444; padding: 8px 12px; text-align: left; }
+  th { background: #2a2a2a; color: #7fd1ff; }
+  .note { background: #2a2a1b; border-left: 3px solid #d4af37; padding: 10px 16px; margin: 16px 0; }
+  .attention { background: #2a1b1b; border-left: 3px solid #d47070; padding: 10px 16px; margin: 16px 0; }
+</style>
+</head>
+<body>
+
+<h1>Circuit de verrouillage d'alimentation — méthode de calcul</h1>
+
+<p>Ce document explique, composant par composant, comment calculer les valeurs
+du circuit de coupure/maintien d'alimentation utilisé pour l'émetteur de la
+boîte aux lettres LoRa. Voir aussi
+<code>Docs\reference_circuit_latch_mosfet.md</code> pour le montage de
+référence original.</p>
+
+<h2>1. À quoi sert ce montage</h2>
+
+<p>L'émetteur (dans la boîte aux lettres, sur batterie) doit rester
+complètement éteint la plupart du temps, et ne s'allumer que lorsque le
+courrier arrive. Le montage fait trois choses dans l'ordre :</p>
+
+<ol>
+  <li>Un contact (ILS sur le volet ou la porte) réveille brièvement la carte
+      en alimentant son "+" via un MOSFET.</li>
+  <li>Une fois démarrée, la carte prend elle-même le relais via une broche
+      GPIO, pour rester alimentée le temps d'envoyer son message LoRa.</li>
+  <li>Une fois le message envoyé, la carte coupe elle-même son alimentation
+      en repassant cette broche à l'état bas.</li>
+</ol>
+
+<h2>2. Les composants et leur rôle</h2>
+
+<table>
+<tr><th>Référence</th><th>Rôle</th></tr>
+<tr><td>Q3 (MOSFET canal P)</td><td>Interrupteur principal, coupe/laisse passer le "+" batterie vers la carte</td></tr>
+<tr><td>Q1 (NPN, 2N2222A)</td><td>Pilote la grille de Q3 : quand Q1 conduit, il tire la grille vers le bas et ouvre Q3</td></tr>
+<tr><td>SW1 (contact ILS)</td><td>Premier déclencheur : donne du courant de base à Q1 pour démarrer la séquence</td></tr>
+<tr><td>R2, D1</td><td>Chemin de commande "contact" vers la base de Q1 (résistance série + diode anti-retour)</td></tr>
+<tr><td>R4, D2</td><td>Chemin de commande "GPIO" vers la base de Q1, en parallèle du précédent (même rôle, même principe)</td></tr>
+<tr><td>R3</td><td>Tire la grille de Q3 vers le haut par défaut, pour qu'il reste bloqué au repos</td></tr>
+<tr><td>R1</td><td>Maintient la ligne du contact à 0V quand SW1 est ouvert (évite les fuites de courant)</td></tr>
+<tr><td>R5</td><td>Maintient la base de Q1 à 0V par défaut, pour qu'il reste bloqué au repos</td></tr>
+<tr><td>C1</td><td>Ponte un court instant la conduction de Q1 si SW1 se rouvre avant que le GPIO n'ait pris le relais</td></tr>
+</table>
+
+<h2>3. Les deux diodes D1/D2 forment un "OU"</h2>
+
+<p>Le contact (SW1) et le GPIO peuvent chacun donner du courant de base à Q1,
+sans interférer l'un avec l'autre — chaque diode empêche le courant de
+remonter vers l'autre source.</p>
+
+<h2>4. Méthode générale : dimensionner un transistor en commutation</h2>
+
+<p>Le principe est toujours le même pour Q1 : on choisit un courant de base
+<code>Ib</code> suffisant pour saturer le transistor, avec de la marge par
+rapport au strict minimum théorique.</p>
+
+<h3>4.1 — Courant que Q1 doit être capable d'absorber (côté collecteur)</h3>
+
+<div class="formule-bloc">Ic(Q1) ≈ (Vbatt − Vce_sat) / R3 ≈ Vbatt / R3</div>
+
+<p>C'est le courant que R3 pousse en permanence vers le collecteur de Q1
+quand Q3 doit rester ouvert. Exemple avec R3 = 100kΩ et Vbatt = 5V :</p>
+
+<div class="formule-bloc">Ic(Q1) ≈ 5V / 100 000Ω = 50 µA</div>
+
+<h3>4.2 — Courant de base minimal théorique</h3>
+
+<div class="formule-bloc">Ib(min) = Ic / hFE_min</div>
+
+<p>Le hFE minimal garanti d'un 2N2222A tourne autour de 100 (valeur datasheet,
+mesurée à un courant plus élevé — à faible courant il peut être plus bas,
+d'où l'intérêt de la marge de sécurité ci-dessous).</p>
+
+<div class="formule-bloc">Ib(min) = 50 µA / 100 = 0,5 µA</div>
+
+<div class="note">
+<strong>Marge de sécurité :</strong> on ne dimensionne jamais pile au minimum
+théorique — les tolérances (hFE réel, température, diodes) varient beaucoup.
+Une pratique courante est de viser un courant de base 5 à 10 fois supérieur
+au minimum théorique, pour saturer le transistor sans ambiguïté :
+<div class="formule-bloc">Ib(design) = 5 à 10 × Ib(min)</div>
+Ici : Ib(design) ≈ 2,5 à 5 µA. En pratique, avec les résistances qu'on va
+calculer, on se retrouve avec un courant bien plus généreux que ça (dizaines
+à centaines de µA) — ce n'est pas un problème, juste une marge confortable.
+</div>
+
+<h2>5. R2 et R4 : les résistances série des deux chemins de commande</h2>
+
+<p>Même formule pour les deux, seule la source change (batterie via SW1 pour
+R2, GPIO pour R4) :</p>
+
+<div class="formule-bloc">R = (V_source − V_diode − V_be(sat)) / Ib(design)</div>
+
+<p>Avec V_diode ≈ 0,7V (1N4002) et V_be(sat) ≈ 0,7V.</p>
+
+<h3>Exemple pour R2 (source = batterie 5V)</h3>
+<div class="formule-bloc">R2 = (5V − 0,7V − 0,7V) / Ib(design) = 3,6V / Ib(design)</div>
+
+<h3>Exemple pour R4 (source = GPIO 3,3V)</h3>
+<div class="formule-bloc">R4 = (3,3V − 0,7V − 0,7V) / Ib(design) = 1,9V / Ib(design)</div>
+
+<div class="attention">
+<strong>Point important découvert en analysant ce montage :</strong> R2 et R4
+ne fixent pas seulement le courant de base en régime permanent — ils fixent
+aussi <em>la vitesse</em> à laquelle Q1 se met à conduire, à cause de C1 qui
+est branché sur ce même nœud (voir section 7). Une valeur de R2/R4 trop
+grande ralentit le démarrage. C'est pour ça que le choix final de ces
+résistances doit être fait <em>après</em> avoir fixé C1, pas avant — voir
+section 7.3.
+</div>
+
+<h2>6. R3 et R5 : les résistances de tirage par défaut</h2>
+
+<p>Leur rôle est de garantir un état "éteint" fiable par défaut (Q3 bloqué,
+Q1 bloqué) tant qu'aucun signal actif n'est présent. Deux contraintes
+s'opposent :</p>
+
+<ul>
+  <li><strong>Pas trop grandes</strong> : sinon elles ne "tirent" pas assez
+      fort, et un état flottant/parasite pourrait allumer le circuit par
+      erreur.</li>
+  <li><strong>Pas trop petites</strong> : sinon elles consomment un courant
+      de fuite permanent inutile (R3 est reliée en permanence au "+" batterie,
+      même à l'arrêt total du circuit), et pour R3 spécifiquement, plus elle
+      est petite, plus Q1 doit absorber de courant pour la dominer (donc plus
+      de courant de base nécessaire).</li>
+</ul>
+
+<p>Valeurs typiques dans ce genre de montage : entre 47kΩ et 220kΩ. Le
+montage de référence utilisait 220kΩ pour l'équivalent de R3 — une valeur
+plus grande économise du courant de fuite au repos, ce qui est justement
+notre priorité (projet sur batterie).</p>
+
+<div class="note">
+<strong>Calcul du courant de fuite au repos sur R3 :</strong> tant que Q3 est
+fermé (au repos), R3 relie quand même en permanence le "+" batterie à la
+grille de Q3, donc à travers R3 puis vers R5. Ce courant de fuite continu
+existe même quand tout est "éteint" :
+<div class="formule-bloc">I_fuite ≈ Vbatt / (R3 + R5)</div>
+Avec R3 = R5 = 100kΩ : I_fuite ≈ 5V / 200 000Ω = 25 µA en permanence. Sur une
+batterie de plusieurs Ah, c'est négligeable, mais augmenter R3/R5 (ex. 220kΩ
+chacune) diviserait encore ce chiffre par ~2.
+</div>
+
+<h2>7. C1 : le condensateur de maintien</h2>
+
+<p>C1 sert à faire tenir Q1 en conduction un court instant après que SW1 se
+soit rouvert, le temps que le GPIO prenne le relais. Il doit satisfaire
+<strong>deux contraintes opposées</strong> en même temps.</p>
+
+<h3>7.1 — Contrainte de maintien (decharge à travers R5)</h3>
+
+<p>Le nœud de base de Q1 se décharge à travers R5 une fois que SW1 est
+rouvert et que le GPIO n'est pas encore actif. Il faut que ça dure plus
+longtemps que le temps de démarrage de la carte (mesuré ~0,4 à 0,5 s dans ce
+projet) :</p>
+
+<div class="formule-bloc">τ_maintien = R5 × C1  ≫  t_demarrage</div>
+
+<p>Avec une marge confortable (facteur ~10), τ_maintien ≥ 4 à 5 s. Avec
+R5 = 100kΩ, ça donne C1 ≥ ~50 µF au strict minimum, et plutôt ~100-220 µF
+pour une marge solide.</p>
+
+<h3>7.2 — Contrainte de démarrage (charge à travers R2)</h3>
+
+<p>Le même condensateur doit aussi se charger via R2 quand SW1 se ferme, et
+ça doit rester bien plus rapide que le temps minimum pendant lequel le
+contact reste fermé en usage réel (mesuré : ≥ 3-4 s pour le volet, ≥ 10 s
+pour la porte) :</p>
+
+<div class="formule-bloc">τ_demarrage = R2 × C1  ≪  t_contact_min</div>
+
+<p>Avec une marge confortable (facteur ~10), τ_demarrage ≤ 0,3 à 0,4 s
+(en prenant le cas le plus défavorable, le volet à 3-4 s).</p>
+
+<h3>7.3 — Les deux contraintes ensemble déterminent R2</h3>
+
+<p>En combinant les deux, avec C1 = 220 µF :</p>
+
+<div class="formule-bloc">R2 ≤ τ_demarrage / C1 = 0,35 s / 220 µF ≈ 1,6 kΩ</div>
+
+<div class="attention">
+La valeur de R2 = 10 kΩ utilisée initialement dans le schéma est donc trop
+grande une fois C1 = 220 µF ajouté : elle ralentit trop le démarrage de Q1.
+Il faut la redescendre pour respecter les deux contraintes en même temps.
+Valeur retenue : <strong>R2 = 1,5 kΩ</strong> (valeur standard la plus proche
+de la limite calculée à 1,6 kΩ). Vérification :
+<div class="formule-bloc">τ_demarrage = 1,5 kΩ × 220 µF ≈ 0,33 s  (≪ 3-4 s du contact, marge ×10)</div>
+Le courant de base résultant :
+<div class="formule-bloc">Ib(design) = 3,6V / 1,5 kΩ ≈ 2,4 mA</div>
+Un courant bien plus confortable que le minimum théorique (2,4 mA contre
+quelques µA nécessaires) — largement suffisant, et toujours négligeable pour
+la batterie vu que c'est bref.
+</div>
+
+<h3>7.4 — R4 : même principe, mais contrainte différente</h3>
+
+<p>Contrairement à R2, R4 n'a pas besoin de charger C1 rapidement tout seul.
+En usage réel, SW1 reste fermé bien plus longtemps que le temps de
+démarrage (3-4 s contre ~0,4-0,5 s) : c'est donc la branche R2/D1 qui a déjà
+chargé C1 et saturé Q1 <em>avant même</em> que le GPIO ne passe à l'état
+haut. Le rôle de R4 est seulement de <strong>prendre le relais</strong> une
+fois que SW1 se rouvre — pas de démarrer quoi que ce soit depuis zéro.</p>
+
+<p>Pour rester cohérent et simple, on garde le même courant de base cible que
+pour R2 (Ib(design) ≈ 2,4 mA), ce qui donne une marge confortable même dans
+le cas où le GPIO devrait, exceptionnellement, recharger le nœud seul :</p>
+
+<div class="formule-bloc">R4 = (Vgpio − V_diode − V_be(sat)) / Ib(design) = (3,3V − 0,7V − 0,7V) / 2,4 mA = 1,9V / 2,4 mA ≈ 792 Ω</div>
+
+<p>Valeur standard la plus proche : <strong>R4 = 820 Ω</strong>.</p>
+
+<div class="note">
+Vérification du courant tiré sur la broche GPIO33 : environ 1,9V / 820Ω ≈
+2,3 mA — largement dans les limites de l'ESP32 (max recommandé ~20 mA en
+continu, absolu 40 mA). Nettement mieux que les 8,6 mA qu'aurait donné la
+valeur initiale de 220Ω.
+</div>
+
+<h2>8. Vérification du MOSFET Q3 (BS250)</h2>
+
+<h3>8.1 — Tension grille-source disponible</h3>
+
+<div class="formule-bloc">Vgs = V_grille − V_source ≈ Vce_sat(Q1) − Vbatt ≈ 0,2V − 5V = −4,8V</div>
+
+<p>À comparer au seuil du BS250 (Vgs(th) entre −2,1V et −4V selon la
+datasheet) : −4,8V dépasse bien le seuil, avec une marge d'environ 0,8V au
+pire cas. C'est suffisant mais pas énorme — un MOSFET avec un seuil plus bas
+donnerait plus de marge si besoin.</p>
+
+<h3>8.2 — Chute de tension en conduction</h3>
+
+<div class="formule-bloc">P = I² × Rds(on)</div>
+
+<p>Avec Rds(on) max = 14Ω (datasheet BS250) et un pic de courant LoRa
+d'environ 120 mA (émission PA_BOOST) :</p>
+
+<div class="formule-bloc">Chute de tension ≈ 0,12A × 14Ω ≈ 1,68V (pire cas)</div>
+
+<div class="note">
+Cette chute au pire cas est significative — à vérifier en pratique une fois
+le montage assemblé, car la carte LoRa pourrait manquer de tension pendant
+l'émission si Rds(on) réel est proche du maximum datasheet. En pratique,
+Rds(on) à Vgs = −4,8V (pas −10V comme souvent spécifié pour la valeur
+"typique") peut être plus élevé que 14Ω — un point à mesurer au multimètre
+une fois le composant en main.
+</div>
+
+<h2>9. Résumé des valeurs</h2>
+
+<table>
+<tr><th>Composant</th><th>Valeur schéma initiale</th><th>Valeur recalculée</th></tr>
+<tr><td>R1</td><td>220 kΩ</td><td>OK, pas de contrainte serrée (juste anti-fuite)</td></tr>
+<tr><td>R2</td><td>10 kΩ</td><td><strong>1,5 kΩ</strong> (voir §7.3)</td></tr>
+<tr><td>R3</td><td>100 kΩ</td><td>OK, envisager 220 kΩ pour réduire encore la fuite</td></tr>
+<tr><td>R4</td><td>220 Ω</td><td><strong>820 Ω</strong> (voir §7.4)</td></tr>
+<tr><td>R5</td><td>100 kΩ</td><td>OK</td></tr>
+<tr><td>C1</td><td>220 µF</td><td>OK, cohérent avec §7.1</td></tr>
+<tr><td>Q1</td><td>2N2222A</td><td>OK</td></tr>
+<tr><td>Q3</td><td>BS250</td><td>OK, à mesurer Rds(on) réel une fois reçu</td></tr>
+</table>
+
+</body>
+</html>

@@ -33,6 +33,8 @@
       "vias",
       "footprint_text",
       "footprint_anchors",
+      "ratsnest",
+      "grid",
       "footprints_front",
       "footprints_back",
       "footprint_values",
@@ -61,7 +63,7 @@
     "ssh_key": ""
   },
   "meta": {
-    "filename": "Latch colis.kicad_prl",
+    "filename": "latch_mosfet_boite_lettres NE555.kicad_prl",
     "version": 5
   },
   "net_inspector_panel": {

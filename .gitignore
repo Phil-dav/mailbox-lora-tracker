@@ -2,3 +2,6 @@
 **/*.lck
 **/.history/
 **/*-backups/
+
+# Contient le mot de passe Wi-Fi — voir src/config.example.rs pour le gabarit
+/src/config.rs

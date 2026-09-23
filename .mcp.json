@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    },
+    "firecrawl": {
+      "command": "npx",
+      "args": ["-y", "firecrawl-mcp"],
+      "env": {
+        "FIRECRAWL_API_KEY": "fc-9f22fb463bfa4fbdb89150f0c19b78d3"
+      }
+    },
+    "kicad": {
+      "type": "stdio",
+      "command": "C:\\Program Files\\KiCad\\10.0\\bin\\python.exe",
+      "args": ["-m", "kicad_mcp_server"],
+      "cwd": "C:\\Users\\floph\\Dropbox\\Dossier de l’équipe Philippe DAVID\\Programme VS code\\kicad-mcp-server"
+    }
+  }
+}

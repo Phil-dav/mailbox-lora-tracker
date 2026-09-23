@@ -91,7 +91,7 @@
 	(footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "23f65f30-d88c-407d-b944-4c67b5c2640a")
-		(at 92.5 57.84 -90)
+		(at 92 57.75 -90)
 		(descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=10.16mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
 		(tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 10.16mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
 		(property "Reference" "R1"
@@ -884,12 +884,12 @@
 			)
 		)
 	)
-	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical"
+	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
 		(layer "F.Cu")
 		(uuid "75485d28-0508-44d2-9b01-ab759ed70656")
 		(at 133.5 50.5)
-		(descr "Through hole straight pin header, 1x06, 2.54mm pitch, single row")
-		(tags "Through hole pin header THT 1x06 2.54mm single row")
+		(descr "Through hole straight pin header, 1x04, 2.54mm pitch, single row")
+		(tags "Through hole pin header THT 1x04 2.54mm single row")
 		(property "Reference" "J4"
 			(at 0 -2.38 0)
 			(layer "F.SilkS")
@@ -902,7 +902,7 @@
 			)
 		)
 		(property "Value" "Jauges"
-			(at 0 15.08 0)
+			(at 0 10 0)
 			(layer "F.Fab")
 			(uuid "dd034232-3b98-497c-b330-a90cc916cd2a")
 			(effects
@@ -980,7 +980,7 @@
 		)
 		(fp_line
 			(start -1.38 1.27)
-			(end -1.38 14.08)
+			(end -1.38 9)
 			(stroke
 				(width 0.12)
 				(type solid)
@@ -999,8 +999,8 @@
 			(uuid "e9ad87bd-419e-4c07-a366-78f9477a9020")
 		)
 		(fp_line
-			(start -1.38 14.08)
-			(end 1.38 14.08)
+			(start -1.38 9)
+			(end 1.38 9)
 			(stroke
 				(width 0.12)
 				(type solid)
@@ -1010,7 +1010,7 @@
 		)
 		(fp_line
 			(start 1.38 1.27)
-			(end 1.38 14.08)
+			(end 1.38 9)
 			(stroke
 				(width 0.12)
 				(type solid)
@@ -1020,7 +1020,7 @@
 		)
 		(fp_rect
 			(start -1.77 -1.77)
-			(end 1.77 14.47)
+			(end 1.77 9.39)
 			(stroke
 				(width 0.05)
 				(type solid)
@@ -1040,7 +1040,7 @@
 			(uuid "ca2201ce-c511-45c2-b860-22b05fc5ac01")
 		)
 		(fp_line
-			(start -1.27 13.97)
+			(start -1.27 8.89)
 			(end -1.27 -0.635)
 			(stroke
 				(width 0.1)
@@ -1061,7 +1061,7 @@
 		)
 		(fp_line
 			(start 1.27 -1.27)
-			(end 1.27 13.97)
+			(end 1.27 8.89)
 			(stroke
 				(width 0.1)
 				(type solid)
@@ -1070,8 +1070,8 @@
 			(uuid "934aed26-16aa-42e3-a317-7263942edf56")
 		)
 		(fp_line
-			(start 1.27 13.97)
-			(end -1.27 13.97)
+			(start 1.27 8.89)
+			(end -1.27 8.89)
 			(stroke
 				(width 0.1)
 				(type solid)
@@ -1080,7 +1080,7 @@
 			(uuid "2722aa8f-e393-48ee-89ac-c6ed4acd4a26")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 6.35 90)
+			(at 0 3.81 90)
 			(layer "F.Fab")
 			(uuid "29912e23-6e71-4be0-85de-0f859c0f0fd0")
 			(effects
@@ -1134,30 +1134,8 @@
 			(pintype "passive")
 			(uuid "142c1cda-dc33-4450-b253-5dabad733093")
 		)
-		(pad "5" thru_hole circle
-			(at 0 10.16)
-			(size 1.7 1.7)
-			(drill 1)
-			(layers "*.Cu" "*.Mask")
-			(remove_unused_layers no)
-			(net "Net-(J4-Pin_5)")
-			(pinfunction "Pin_5_5")
-			(pintype "passive")
-			(uuid "e45e1373-718b-4374-aa3a-41d4a295cf58")
-		)
-		(pad "6" thru_hole circle
-			(at 0 12.7)
-			(size 1.7 1.7)
-			(drill 1)
-			(layers "*.Cu" "*.Mask")
-			(remove_unused_layers no)
-			(net "Net-(J4-Pin_6)")
-			(pinfunction "Pin_6_6")
-			(pintype "passive")
-			(uuid "65409005-c98b-428d-ac0f-bf813a549120")
-		)
 		(embedded_fonts no)
-		(model "${KICAD10_3DMODEL_DIR}/Connector_PinHeader_2.54mm.3dshapes/PinHeader_1x06_P2.54mm_Vertical.step"
+		(model "${KICAD10_3DMODEL_DIR}/Connector_PinHeader_2.54mm.3dshapes/PinHeader_1x04_P2.54mm_Vertical.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -2766,20 +2744,28 @@
 		(uuid "247ac585-3ece-46b9-9e0f-7d680daeadab")
 	)
 	(segment
-		(start 92.5 56.5)
-		(end 92.5 57.84)
+		(start 89.46 53.46)
+		(end 92.1 56.1)
 		(width 1)
 		(layer "F.Cu")
 		(net "Net-(Q1-Pad2)")
-		(uuid "26350af9-2de6-40e3-a4b8-513521967dac")
+		(uuid "755d65be-3d64-4ad4-b65f-ed1c09a6e381")
 	)
 	(segment
-		(start 89.46 53.46)
-		(end 92.5 56.5)
+		(start 92.1 56.1)
+		(end 92.1 57.65)
 		(width 1)
 		(layer "F.Cu")
 		(net "Net-(Q1-Pad2)")
-		(uuid "dce9bbd4-bb1d-4186-9ca8-8a23807a6bf9")
+		(uuid "964c6069-e8c7-4737-b589-1049805eaa5d")
+	)
+	(segment
+		(start 92.1 57.65)
+		(end 92 57.75)
+		(width 1)
+		(layer "F.Cu")
+		(net "Net-(Q1-Pad2)")
+		(uuid "ace539ee-7b58-4148-a963-5e6f560fd15c")
 	)
 	(segment
 		(start 84.04 53.46)
@@ -2787,7 +2773,7 @@
 		(width 1)
 		(layer "F.Cu")
 		(net "Net-(Q1-Pad2)")
-		(uuid "e6efe993-2db2-4dbe-9faa-967ea3e4b9ba")
+		(uuid "f1543a2f-f2c2-4b33-aa3c-5243ae4237c6")
 	)
 	(segment
 		(start 101.31 69.81)
@@ -2795,15 +2781,7 @@
 		(width 1)
 		(layer "F.Cu")
 		(net "Net-(U1-33)")
-		(uuid "68840cbe-e7e9-42ac-baae-131f776fc03e")
-	)
-	(segment
-		(start 92.5 68)
-		(end 99.5 68)
-		(width 1)
-		(layer "F.Cu")
-		(net "Net-(U1-33)")
-		(uuid "89264513-8854-4816-ba93-f781a1870a59")
+		(uuid "324dde07-2beb-47f8-b377-12cbdaad39e6")
 	)
 	(segment
 		(start 99.5 68)
@@ -2811,7 +2789,23 @@
 		(width 1)
 		(layer "F.Cu")
 		(net "Net-(U1-33)")
-		(uuid "c9b37165-207d-4603-8a7e-7ca9537f3d1d")
+		(uuid "79637588-e802-45fc-ae82-04beae4c2678")
+	)
+	(segment
+		(start 92 67.91)
+		(end 92.09 68)
+		(width 1)
+		(layer "F.Cu")
+		(net "Net-(U1-33)")
+		(uuid "aeadbe03-ba4a-4934-b37c-338a3ea4e916")
+	)
+	(segment
+		(start 92.09 68)
+		(end 99.5 68)
+		(width 1)
+		(layer "F.Cu")
+		(net "Net-(U1-33)")
+		(uuid "bb553ca6-926d-4075-865f-30912f947d75")
 	)
 	(segment
 		(start 86.5 61)
@@ -3094,44 +3088,12 @@
 		(uuid "fae7f0b5-5d66-4201-aee6-fbb9c598c77f")
 	)
 	(segment
-		(start 124.37 61)
-		(end 133.16 61)
-		(width 1)
-		(layer "F.Cu")
-		(net "Net-(J4-Pin_5)")
-		(uuid "010b7917-387f-4939-83d0-5392c637dbca")
-	)
-	(segment
 		(start 124.285 61.085)
 		(end 124.37 61)
 		(width 1)
 		(layer "F.Cu")
 		(net "Net-(J4-Pin_5)")
 		(uuid "17304795-84d3-4128-ac4e-d872f72d2b39")
-	)
-	(segment
-		(start 133.16 61)
-		(end 133.5 60.66)
-		(width 1)
-		(layer "F.Cu")
-		(net "Net-(J4-Pin_5)")
-		(uuid "3c7093c3-d55e-4ee1-948c-4d7b2181e84d")
-	)
-	(segment
-		(start 133.195 63.505)
-		(end 133.5 63.2)
-		(width 1)
-		(layer "F.Cu")
-		(net "Net-(J4-Pin_6)")
-		(uuid "453b8d08-eaff-48bd-91d3-dd2b4641eabf")
-	)
-	(segment
-		(start 124.315 63.505)
-		(end 133.195 63.505)
-		(width 1)
-		(layer "F.Cu")
-		(net "Net-(J4-Pin_6)")
-		(uuid "5d9c94d2-4078-434a-8707-6e253d643acc")
 	)
 	(segment
 		(start 66 78.5)

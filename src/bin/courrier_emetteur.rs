@@ -223,8 +223,8 @@ fn main() -> anyhow::Result<()> {
     let poids_confirme = poids_final_g >= SEUIL_POIDS_G;
     let poids_arrondi = poids_final_g.round() as i32;
 
+    let mut message: String<32> = String::new();
     if poids_confirme {
-        let mut message: String<32> = String::new();
         write!(message, "COLIS:{}", poids_arrondi).ok();
     } else {
         write!(message, "RIEN").ok();

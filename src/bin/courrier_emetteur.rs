@@ -16,17 +16,18 @@ use lora_boite_lettres::sx127x::{Reception, Sx127x};
 // percer, logement en location). Séquence (voir schéma KiCad
 // "Latch colis sans inter", circuit Q1/Q2 validé) :
 //
-//   Réveil RTC (toutes les INTERVALLE_VEILLE_US) -> mise sous tension du
-//   HX711 (GPIO33 -> Q1 -> Q2, MOSFET P-channel côté haut) -> pesée avec
-//   boucle de stabilisation -> poids >= seuil ? envoi LoRa "COLIS:<g>" et
-//   attente d'accusé de réception (essais bornés) : sinon rien -> (les deux
-//   branches reconvergent) coupure de l'alimentation du HX711, mise en
-//   sommeil du module LoRa, puis deep-sleep de l'ESP32 jusqu'au prochain
-//   réveil. Aucune mémorisation entre les cycles pour la décision d'envoi
-//   (pas de poids de référence "avant/après", pas de "déjà notifié") : on
-//   notifie à chaque réveil tant qu'il y a du poids sur le plateau, décision
-//   actée avec l'utilisateur (peu importe qu'il s'agisse du même courrier
-//   non récupéré ou d'un colis supplémentaire empilé).
+//   Réveil RTC (toutes les INTERVALLE_VEILLE_US, corrigé à chaque échange
+//   réussi, voir plus bas) -> mise sous tension du HX711 (GPIO33 -> Q1 -> Q2,
+//   MOSFET P-channel côté haut) -> pesée avec boucle de stabilisation ->
+//   poids >= seuil ? "COLIS:<g>" : "RIEN" -> envoi LoRa systématique et
+//   attente d'accusé de réception (essais bornés), qui porte aussi la
+//   correction d'horloge du récepteur -> coupure de l'alimentation du HX711,
+//   mise en sommeil du module LoRa, puis deep-sleep de l'ESP32 jusqu'au
+//   prochain réveil. Aucune mémorisation entre les cycles pour la décision
+//   d'envoi (pas de poids de référence "avant/après", pas de "déjà
+//   notifié") : on notifie à chaque réveil tant qu'il y a du poids sur le
+//   plateau, décision actée avec l'utilisateur (peu importe qu'il s'agisse
+//   du même courrier non récupéré ou d'un colis supplémentaire empilé).
 //
 // Pas d'écran OLED sur cette version : décision actée (consommation inutile
 // sur une carte alimentée par pile, aucune indication utile une fois la
@@ -37,16 +38,27 @@ const DELAI_TOUR_MS: u32 = 20;
 const MAX_ESSAIS: u32 = 3;
 
 // --- Intervalle entre deux réveils ---
-// Pas d'horloge temps réel ni de NTP disponible sur cette carte (pile +
-// LoRa seul, pas de WiFi) : impossible de viser une heure de mur (12h/18h)
-// exacte, seulement un intervalle fixe entre deux réveils. Avec 12h on a
-// bien "deux fois par jour", mais l'heure réelle des réveils dépend de
-// l'heure de mise sous tension initiale (et dérive très légèrement dans le
-// temps selon la précision du timer RTC interne — dérive acceptée sur
-// plusieurs mois). Pour un vrai calage sur des heures de mur fixes, il
-// faudrait une puce RTC externe (ex. DS3231) ou une resynchronisation NTP
-// occasionnelle : pas fait ici, à revoir si besoin.
+// Pas d'horloge temps réel ni de Wi-Fi/NTP sur cette carte (pile seule, hors
+// de question d'ajouter du matériel/de la consommation juste pour l'horloge
+// — voir [[projet_boite_lettres_lora]]). Valeur de repli utilisée tant
+// qu'aucune correction n'a encore été reçue (premier réveil, ou échec de
+// l'ACK) : 12h donne "deux fois par jour" à peu près, sans dérive corrigée.
+//
+// Correction d'horloge (10/09/2026) : à chaque réveil, l'émetteur envoie
+// systématiquement un message (COLIS ou RIEN, voir plus bas) et écoute
+// l'ACK. Le récepteur, lui, est sur secteur et synchronisé en NTP — il glisse
+// à la fin de son ACK le nombre de secondes jusqu'au prochain 12h00/18h00
+// (heure de Paris). Si cette correction est reçue, elle remplace
+// INTERVALLE_VEILLE_US pour la durée de veille qui suit, ce qui recale
+// l'émetteur sur l'heure murale à chaque échange réussi sans qu'il ait
+// besoin de connaître l'heure lui-même. Voir courrier_recepteur.rs.
 const INTERVALLE_VEILLE_US: u64 = 12 * 60 * 60 * 1_000_000;
+
+// Plancher de sécurité pour la durée de veille corrigée : évite un réveil
+// quasi immédiat (boucle qui viderait la batterie) si jamais la correction
+// reçue tombait tout près de zéro (réveil arrivé à quelques secondes d'un
+// 12h/18h pile).
+const DUREE_VEILLE_MIN_US: u64 = 5 * 60 * 1_000_000;
 
 // --- Pesée HX711 (voir mémoire projet, calibration validée à la main de
 // 13g à 2,25kg avec un zéro frais : ~23,7 points bruts par gramme) ---
@@ -204,70 +216,96 @@ fn main() -> anyhow::Result<()> {
         warn!("Pesée non stabilisée après {} ms, valeur retenue quand même : {:.0} g", attente_stabilisation_ms, poids_final_g);
     }
 
-    // --- Décision d'envoi : à chaque réveil tant qu'il y a du poids sur le
-    // plateau, sans distinction ancien/nouveau courrier (décision actée
-    // avec l'utilisateur) ---
+    // --- Message envoyé à chaque réveil, avec ou sans poids détecté (décision
+    // actée avec l'utilisateur : pas de distinction ancien/nouveau courrier).
+    // "RIEN" est envoyé même sans poids pour que le récepteur ait toujours
+    // l'occasion de renvoyer la correction d'horloge (voir plus haut) ---
     let poids_confirme = poids_final_g >= SEUIL_POIDS_G;
     let poids_arrondi = poids_final_g.round() as i32;
 
     if poids_confirme {
         let mut message: String<32> = String::new();
         write!(message, "COLIS:{}", poids_arrondi).ok();
-        let mut attendu: String<32> = String::new();
-        write!(attendu, "ACK_{}", message.as_str()).ok();
-
-        let mut ack_recu = false;
-        for essai in 1..=MAX_ESSAIS {
-            match lora.envoyer(message.as_bytes()) {
-                Ok(()) => info!("Envoyé : \"{}\" (essai {}/{})", message, essai, MAX_ESSAIS),
-                Err(e) => {
-                    warn!("Échec d'envoi : {:?}", e);
-                    continue;
-                }
-            }
-
-            lora.demarrer_ecoute()?;
-
-            for _ in 0..TOURS_ATTENTE_ACK {
-                if let Ok(Reception::Paquet { donnees, rssi_dbm }) = lora.recevoir() {
-                    let texte = core::str::from_utf8(&donnees).unwrap_or("");
-                    if texte == attendu.as_str() {
-                        ack_recu = true;
-                        info!("ACK reçu (RSSI {} dBm)", rssi_dbm);
-                        break;
-                    }
-                }
-                FreeRtos::delay_ms(DELAI_TOUR_MS);
-            }
-
-            if ack_recu {
-                break;
-            } else {
-                warn!("Pas d'ACK (essai {}/{})", essai, MAX_ESSAIS);
-            }
-        }
-
-        if !ack_recu {
-            warn!("Aucun ACK après {} essais, on repart en sommeil quand même", MAX_ESSAIS);
-        }
     } else {
-        info!("Pas de poids confirmé ({:.0} g < seuil {} g), rien n'est envoyé", poids_final_g, SEUIL_POIDS_G);
+        write!(message, "RIEN").ok();
+    }
+    let mut attendu: String<32> = String::new();
+    write!(attendu, "ACK_{}", message.as_str()).ok();
+
+    let mut ack_recu = false;
+    let mut duree_veille_us = INTERVALLE_VEILLE_US;
+
+    for essai in 1..=MAX_ESSAIS {
+        match lora.envoyer(message.as_bytes()) {
+            Ok(()) => info!("Envoyé : \"{}\" (essai {}/{})", message, essai, MAX_ESSAIS),
+            Err(e) => {
+                warn!("Échec d'envoi : {:?}", e);
+                continue;
+            }
+        }
+
+        lora.demarrer_ecoute()?;
+
+        for _ in 0..TOURS_ATTENTE_ACK {
+            if let Ok(Reception::Paquet { donnees, rssi_dbm }) = lora.recevoir() {
+                let texte = core::str::from_utf8(&donnees).unwrap_or("");
+                if texte.starts_with(attendu.as_str()) {
+                    ack_recu = true;
+                    info!("ACK reçu (RSSI {} dBm)", rssi_dbm);
+
+                    // Correction d'horloge optionnelle : le récepteur ajoute
+                    // ":<secondes jusqu'au prochain 12h/18h>" à la fin de
+                    // l'ACK quand il connaît l'heure (NTP synchronisé).
+                    if let Some(reste) = texte.get(attendu.len()..) {
+                        if let Some(secondes_texte) = reste.strip_prefix(':') {
+                            match secondes_texte.parse::<u64>() {
+                                Ok(secondes) => {
+                                    duree_veille_us = secondes
+                                        .saturating_mul(1_000_000)
+                                        .max(DUREE_VEILLE_MIN_US);
+                                    info!(
+                                        "Correction d'horloge reçue : prochain réveil dans {} s",
+                                        secondes
+                                    );
+                                }
+                                Err(_) => warn!("Correction d'horloge illisible dans l'ACK : \"{}\"", reste),
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+            FreeRtos::delay_ms(DELAI_TOUR_MS);
+        }
+
+        if ack_recu {
+            break;
+        } else {
+            warn!("Pas d'ACK (essai {}/{})", essai, MAX_ESSAIS);
+        }
     }
 
-    // --- Fin de cycle (convergence des deux branches, comme dans la
-    // version précédente) : coupure de l'alimentation du HX711, mise en
-    // sommeil du module LoRa (sinon il continue de consommer plusieurs mA
-    // tout seul pendant le deep-sleep de l'ESP32), puis deep-sleep de
-    // l'ESP32 jusqu'au prochain réveil programmé ---
+    if !ack_recu {
+        warn!(
+            "Aucun ACK après {} essais, pas de correction d'horloge, intervalle par défaut ({} h)",
+            MAX_ESSAIS,
+            INTERVALLE_VEILLE_US / 3_600_000_000
+        );
+    }
+
+    // --- Fin de cycle (convergence des deux branches) : coupure de
+    // l'alimentation du HX711, mise en sommeil du module LoRa (sinon il
+    // continue de consommer plusieurs mA tout seul pendant le deep-sleep de
+    // l'ESP32), puis deep-sleep de l'ESP32 jusqu'au prochain réveil ---
     lora.dormir()?;
     alimentation_hx711.set_low()?;
 
     info!(
-        "Fin de cycle, entrée en deep-sleep pour {} h",
-        INTERVALLE_VEILLE_US / 3_600_000_000
+        "Fin de cycle, entrée en deep-sleep pour {:.1} h",
+        duree_veille_us as f64 / 3_600_000_000.0
     );
     unsafe {
-        esp_idf_svc::sys::esp_deep_sleep(INTERVALLE_VEILLE_US);
+        esp_idf_svc::sys::esp_deep_sleep(duree_veille_us);
     }
 
     // Ne devrait jamais être atteint (esp_deep_sleep ne revient pas) :

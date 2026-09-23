@@ -1738,7 +1738,7 @@
 			(uuid "62cbcb1e-57cb-4fbf-958b-7b24009bb2d6")
 		)
 		(embedded_fonts no)
-		(model "${MODEL3D_DIR}/KF301-5.0-2P.step"
+		(model "C:/Users/floph/Dropbox/Dossier de l’équipe Philippe DAVID/Programme VS code/Mes empreintes.3dshapes/KF301-5.0-2P.step"
 			(offset
 				(xyz 2.5 0 0)
 			)
@@ -2209,10 +2209,9 @@
 			(uuid "ce77e858-66d7-4f9c-864e-7a1591d6bb5b")
 		)
 		(embedded_fonts no)
-		(model "${KICAD10_3RD_PARTY}/HX711.step"
-			(opacity 0.7000)
+		(model "C:/Users/floph/Dropbox/Dossier de l’équipe Philippe DAVID/Programme VS code/Mes empreintes.3dshapes/HX711 Breakout v7.step"
 			(offset
-				(xyz 18 9 4)
+				(xyz 0.5 -1 2.5)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -2743,7 +2742,7 @@
 			(uuid "5bd2fe00-a8fb-4860-92b2-629baf4a0b13")
 		)
 		(embedded_fonts no)
-		(model "${KICAD10_3RD_PARTY}/MODULE_ESP32_LORA_V2.0.step"
+		(model "C:/Users/floph/Dropbox/Dossier de l’équipe Philippe DAVID/Programme VS code/Mes empreintes.3dshapes/MODULE_ESP32_LORA_V2.0.step"
 			(offset
 				(xyz 0 -1.5 2.5)
 			)
@@ -2861,14 +2860,6 @@
 		(layer "F.Cu")
 		(net "/+3.3V HX711")
 		(uuid "23cce33e-6cee-47cf-924e-6db9c35cc242")
-	)
-	(segment
-		(start 78.45 65.55)
-		(end 79 65)
-		(width 1)
-		(layer "F.Cu")
-		(net "/+3.3V HX711")
-		(uuid "5b18cbd8-4b7c-4fb6-b3a3-8c85070ecf5a")
 	)
 	(segment
 		(start 83.92 65)

@@ -2699,6 +2699,10 @@
 		(uuid "56715f07-fc7b-4dc7-bccd-7ca586f4d085")
 	)
 	(no_connect
+		(at 29.21 104.14)
+		(uuid "5abe09d7-435d-4585-9c6e-717362baf5f5")
+	)
+	(no_connect
 		(at 133.35 85.09)
 		(uuid "6076d6d5-f117-453b-8c96-b9c55dd711c9")
 	)
@@ -2727,8 +2731,16 @@
 		(uuid "833cd1e5-2ab2-47fd-a5f1-0b6b7c549de7")
 	)
 	(no_connect
+		(at 29.21 106.68)
+		(uuid "88e82a86-1055-46e8-9d45-c21a97d21fd3")
+	)
+	(no_connect
 		(at 163.83 85.09)
 		(uuid "8be5b726-6c91-469d-9c4e-cdd4e5a873e2")
+	)
+	(no_connect
+		(at 27.94 113.03)
+		(uuid "8f22df18-5b8f-4787-8c9a-49dd582a1a9b")
 	)
 	(no_connect
 		(at 133.35 72.39)
@@ -3953,7 +3965,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical"
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
 			(at 29.21 99.06 0)
 			(hide yes)
 			(show_name no)
